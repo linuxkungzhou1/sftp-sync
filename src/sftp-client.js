@@ -6,15 +6,19 @@ const util = require('./helpers');
 const channel = util.channel;
 
 exports.syncToServer = function(filePath, config) {
+  filePath = filePath.replace(/\\/g,'/');
+  //vscode.window.showInformationMessage(`====filePath ${filePath}`);
   const localRoot = config.local.root || vscode.workspace.rootPath;
   const targets = config.remotes || [];
   const relativePath = filePath.replace(localRoot, '');
 
   targets.forEach((target) => {
     const remoteRoot = target.root;
-    const remotePath = path.join(remoteRoot,relativePath)
-    const remoteDir = path.dirname(remotePath);
-
+    const remotePath = path.join(remoteRoot,relativePath).replace(/\\/g,'/');
+    const remoteDir = path.dirname(remotePath).replace(/\\/g,'/');
+	//vscode.window.showInformationMessage(`====relativePath path ${relativePath}`);
+	//vscode.window.showInformationMessage(`====localRoot path ${localRoot}`);
+	//vscode.window.showInformationMessage(`====remote path ${remoteDir}`);
     const sftp = new Client();
     sftp.connect(target)
     .then(() => sftp.mkdir(remoteDir, true)) // insure the directory exists
@@ -23,9 +27,9 @@ exports.syncToServer = function(filePath, config) {
       sftp.end();
 
       const now = Moment();
-      vscode.window.showInformationMessage(`succeed to sync ${relativePath} to ${target.host}:${remotePath}`);
+      //vscode.window.showInformationMessage(`succeed to sync ${relativePath} to ${target.host}:${remotePath}`);
       
-      channel.appendLine(`${now.format('YYYY-MM-DD HH:mm:ss')} -> uploaded file: `);
+      channel.appendLine(`${now.format('YYYY-MM-DD HH:mm:ss')} -> uploaded file successful: `);
       channel.appendLine(`    local: ${filePath}`);
       channel.appendLine(`    remote: ${remotePath}`);
       channel.appendLine('');
